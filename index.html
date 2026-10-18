@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TargetCoach Basis</title>
+<meta name="description" content="Gratis hardloopplan op maat: beantwoord een paar vragen, volg je plan week voor week en houd je trainingen bij. Zonder account.">
+<meta name="theme-color" content="#11233B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TargetCoach">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: smalle kolom; donkerblauwe kopbalk met tabs, daaronder kaarten. Zelfde huisstijl als TargetCoach. */
+:root{
+  --bg:#F1F5F9; --surface:#FFFFFF; --fg:#11233B; --muted:#55657A; --line:#D5DFEA;
+  --accent:#0A72C2; --accent-ink:#FFFFFF; --accent-soft:#E2F2FD;
+  --band:#11233B; --band-fg:#FFFFFF; --band-muted:#A7B6C8; --lane:#90DCF6;
+  --good:#1D7444; --good-bg:#E1F3E8; --warn-bg:#FFF0D9; --warn-fg:#8A4600; --crit:#B42318; --crit-bg:#FDE6E3;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow","Segoe UI",system-ui,sans-serif;
+  --r:12px; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0A1626; --surface:#122640; --fg:#E8F0F8; --muted:#9DB2C8; --line:#24405F;
+  --accent:#14A4FD; --accent-ink:#06121F; --accent-soft:#0F3352;
+  --good:#6FD39B; --good-bg:#10291C; --warn-bg:#33240C; --warn-fg:#FFC56B; --crit:#FF9A8A; --crit-bg:#3A1512; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0A1626; --surface:#122640; --fg:#E8F0F8; --muted:#9DB2C8; --line:#24405F;
+  --accent:#14A4FD; --accent-ink:#06121F; --accent-soft:#0F3352;
+  --good:#6FD39B; --good-bg:#10291C; --warn-bg:#33240C; --warn-fg:#FFC56B; --crit:#FF9A8A; --crit-bg:#3A1512; color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;padding:0 16px calc(32px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+[hidden]{display:none!important}
+.band{margin-inline:-16px;padding:calc(18px + env(safe-area-inset-top,0px)) 16px 0;background:var(--band);color:var(--band-fg)}
+@media (min-width:793px){.band{margin-inline:0;border-radius:0 0 var(--r) var(--r);padding-inline:20px}}
+.band-in{display:flex;flex-direction:column;gap:14px}
+.band-in.zonder-tabs{padding-bottom:18px}
+.kop{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.merk{display:flex;flex-direction:column;gap:6px;min-width:0}
+h1{font-family:var(--display);font-style:italic;font-weight:800;font-size:clamp(2rem,7vw,2.8rem);line-height:.9;margin:0;text-transform:uppercase}
+h1 span{color:var(--lane)}
+h1 small{font-size:.45em;font-style:normal;letter-spacing:.12em;color:var(--band-muted);vertical-align:middle;margin-left:.3em}
+.slogan{margin:0;color:var(--band-muted);font-weight:500}
+.logo{flex:none;width:clamp(56px,14vw,84px);height:auto;display:block}
+.tabs{display:flex;gap:4px;overflow-x:auto}
+.tabs button{background:transparent;color:var(--band-muted);border:0;border-radius:10px 10px 0 0;padding:10px 16px 9px;font-family:var(--display);font-weight:700;font-size:1.05rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.tabs button[aria-selected="true"]{background:var(--bg);color:var(--fg)}
+h2{font-family:var(--display);font-weight:700;font-size:1.45rem;line-height:1.15;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-weight:700;font-size:1.2rem;margin:0}
+.label{font-family:var(--display);font-weight:700;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card p{margin:0;max-width:65ch}
+.hint{color:var(--muted);font-size:.9rem}
+.rij{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button,.knop{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:10px 18px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+button.ghost,.knop.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+button.ghost:hover{border-color:var(--accent);color:var(--accent)}
+button.small{padding:7px 14px;font-size:.92rem}
+button:disabled{opacity:.5;cursor:default}
+button.gevaar{color:var(--crit)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--lane);outline-offset:2px}
+input[type=text],input[type=date],input[type=number],textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field > label,.field > .flabel{font-weight:600}
+.status{font-size:.9rem;color:var(--muted)}
+.fout{color:var(--crit);font-size:.9rem}
+
+/* Vragenlijst */
+.stap-kop{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.stippen{display:flex;gap:5px}
+.stippen span{width:22px;height:6px;border-radius:3px;background:var(--line)}
+.stippen span.ja{background:var(--accent)}
+.keuzes{display:flex;flex-direction:column;gap:8px}
+.keuzes.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.keuze{position:relative}
+.keuze input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.keuze span{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-weight:600}
+.keuze span small{font-weight:400;color:var(--muted)}
+.keuze input:checked + span{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.keuze input:focus-visible + span{outline:3px solid var(--lane);outline-offset:2px}
+.dagen{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.dagen .keuze span{align-items:center;padding:12px 4px;font-family:var(--display);font-size:1.05rem}
+.parq{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.parq li{display:flex;flex-direction:column;gap:6px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.janee{display:flex;gap:6px}
+.janee .keuze span{padding:7px 16px;flex-direction:row}
+.melding{padding:12px 14px;border-radius:10px;background:var(--accent-soft)}
+.melding.let{background:var(--warn-bg);color:var(--warn-fg)}
+.melding.kritiek{background:var(--crit-bg);color:var(--crit)}
+.melding ul{margin:6px 0 0;padding-left:1.2em}
+
+/* Plan */
+.vandaag{background:var(--band);color:var(--band-fg);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:8px}
+.vandaag .label{color:var(--lane)}
+.vandaag strong{font-family:var(--display);font-size:1.5rem;line-height:1.15;text-wrap:balance}
+.vandaag p{margin:0;color:var(--band-muted)}
+.vandaag button{align-self:flex-start;background:var(--lane);border-color:var(--lane);color:#06121F}
+.pill{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:5px 12px;font-weight:600;align-self:flex-start}
+.pill.goed{background:var(--good-bg);color:var(--good)}
+.pill.let{background:var(--warn-bg);color:var(--warn-fg)}
+.pill.kritiek{background:var(--crit-bg);color:var(--crit)}
+.pill.neutraal{background:var(--accent-soft);color:var(--fg)}
+.doel-tekst{font-family:var(--display);font-weight:700;font-size:1.55rem;line-height:1.15;text-wrap:balance}
+.balk{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.balk span{display:block;height:100%;width:0;background:var(--accent);border-radius:5px;transition:width .5s ease}
+.cijfers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;border-top:1px solid var(--line);padding-top:12px}
+.cijfers div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.c-num{font-family:var(--display);font-size:2rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.c-lbl{font-size:.8rem;color:var(--muted);line-height:1.3}
+.weken{display:flex;flex-direction:column;gap:10px;list-style:none;margin:0;padding:0}
+.week{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.week summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 16px;flex-wrap:wrap}
+.week summary::-webkit-details-marker{display:none}
+.week .nr{font-family:var(--display);font-weight:700;font-size:1.25rem}
+.week .tel{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem;white-space:nowrap}
+.week .pijl{width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s;flex:none;margin-top:-4px}
+.week[open] .pijl{transform:rotate(-135deg);margin-top:4px}
+.week.nu{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.week.nu .nr{color:var(--accent)}
+.week.klaar .tel{color:var(--good);font-weight:600}
+.badge{font-size:.75rem;font-weight:600;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.trainingen{list-style:none;margin:0;padding:0 16px 14px;display:flex;flex-direction:column;gap:8px}
+.training{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.training .tt{display:flex;flex-direction:column;min-width:0;overflow-wrap:anywhere;flex:1}
+.training .tk{font-weight:600;font-size:.85rem;color:var(--muted)}
+.training.gedaan .tx{text-decoration:line-through;text-decoration-color:var(--muted);opacity:.7}
+.vink{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--good-bg);color:var(--good);font-weight:700}
+.week-acties{padding:0 16px 14px;display:flex;flex-wrap:wrap;gap:8px}
+.mijlpalen{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;list-style:none;margin:0;padding:0}
+.mijlpalen li{display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:.9rem}
+.mijlpalen li.ja{background:var(--good-bg);border-color:transparent;color:var(--good);font-weight:600}
+.mijlpalen .ic{width:22px;height:22px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;font-size:.8rem;flex:none}
+.tip{background:var(--accent-soft);border-color:transparent}
+.tip .label{color:var(--accent)}
+
+/* Logboek */
+.twee{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.veld{display:flex;align-items:center;gap:6px}
+.veld em{font-style:normal;color:var(--muted)}
+.rpe-kop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.rpe-waarde strong{font-family:var(--display);font-size:1.6rem}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.ends{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted)}
+.gekoppeld{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;background:var(--accent-soft)}
+.sessies{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.sessies li{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
+.sessies .sd{font-family:var(--display);font-weight:700;font-size:1.1rem;min-width:3.2em}
+.sessies .si{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere}
+.sessies .pijn{color:var(--crit);font-weight:600}
+.reactie{border-color:var(--accent)}
+.voet{text-align:center;color:var(--muted);font-size:.85rem;display:flex;flex-direction:column;gap:6px;align-items:center;padding-top:8px}
+.voet button{background:none;border:0;color:var(--accent);padding:0;font-weight:600;text-decoration:underline}
+.over-lijst{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+@media (max-width:520px){.dagen .keuze span{font-size:.95rem}.cijfers{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media print{body{background:#fff}.band,.geen-print,.voet{display:none!important}.week{break-inside:avoid}details>*{display:block}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="band">
+    <div class="band-in" id="band-in">
+      <div class="kop">
+        <div class="merk">
+          <h1>Target<span>Coach</span><small>Basis</small></h1>
+          <p class="slogan">Stel je doel. Volg je route. Haal de finish.</p>
+        </div>
+        <img class="logo" src="icon-192.png" alt="TargetCoach-logo" width="84" height="84">
+      </div>
+      <nav class="tabs" role="tablist" aria-label="Onderdelen" id="tabs" hidden>
+        <button type="button" role="tab" id="tab-plan" aria-selected="true" aria-controls="view-plan">Mijn plan</button>
+        <button type="button" role="tab" id="tab-log" aria-selected="false" aria-controls="view-log">Logboek</button>
+        <button type="button" role="tab" id="tab-over" aria-selected="false" aria-controls="view-over">Over</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- WELKOM -->
+  <main class="wrap" id="view-welkom" hidden>
+    <section class="card">
+      <h2>Je eigen hardloopplan, gratis</h2>
+      <p>Beantwoord een paar vragen en krijg een trainingsplan per week dat past bij jouw niveau en je doel. Van je eerste rondje tot een halve marathon.</p>
+      <ul class="over-lijst">
+        <li>Geen account nodig: alles blijft op je eigen telefoon.</li>
+        <li>Gebaseerd op betrouwbare bronnen, zoals Start to Run-principes, de Beweegrichtlijnen en onderzoek naar hardloopblessures.</li>
+        <li>Vul na elke training in hoe het ging; de app helpt je bijsturen.</li>
+      </ul>
+      <div class="rij"><button type="button" id="begin">Maak mijn plan</button></div>
+      <p class="hint">Duurt ongeveer 2 minuten. TargetCoach is geen arts of fysiotherapeut.</p>
+    </section>
+    <section class="card" id="gedeeld" hidden>
+      <span class="label">Je hebt een plan ontvangen</span>
+      <p class="doel-tekst" id="gedeeld-doel"></p>
+      <p id="gedeeld-info"></p>
+      <div class="rij"><button type="button" id="gedeeld-ja">Dit plan volgen</button></div>
+      <p class="hint">Dit plan is gemaakt met de AI-coach van TargetCoach. Lees voor je begint de tips bij "Zo loop je veilig".</p>
+    </section>
+  </main>
+
+  <!-- VRAGENLIJST -->
+  <main class="wrap" id="view-vragen" hidden>
+    <section class="card" id="vraag-kaart" aria-live="polite">
+      <div class="stap-kop"><span class="label" id="vraag-nr"></span><div class="stippen" id="stippen" aria-hidden="true"></div></div>
+      <h2 id="vraag-titel"></h2>
+      <p class="hint" id="vraag-uitleg"></p>
+      <div id="vraag-inhoud"></div>
+      <p class="fout" id="vraag-fout" hidden></p>
+      <div class="rij"><button type="button" class="ghost" id="vraag-terug">Terug</button><button type="button" id="vraag-verder">Verder</button></div>
+    </section>
+  </main>
+
+  <!-- RESULTAAT -->
+  <main class="wrap" id="view-resultaat" hidden>
+    <section class="card">
+      <span class="label">Jouw plan</span>
+      <p class="doel-tekst" id="res-doel"></p>
+      <p id="res-samenvatting"></p>
+      <div id="res-meldingen" class="wrap" style="gap:8px"></div>
+      <div class="rij"><button type="button" id="res-start">Start met dit plan</button><button type="button" class="ghost" id="res-terug">Antwoorden aanpassen</button></div>
+    </section>
+    <section class="card" id="res-blok" hidden>
+      <div class="melding let" id="res-blok-tekst"></div>
+      <div class="rij"><button type="button" id="res-ander"></button><button type="button" class="ghost" id="res-blok-terug">Antwoorden aanpassen</button></div>
+    </section>
+    <section class="card"><h3>Zo ziet je plan eruit</h3><ol class="weken" id="res-weken"></ol></section>
+  </main>
+
+  <!-- MIJN PLAN -->
+  <main class="wrap" id="view-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
+    <section class="vandaag" id="vandaag" aria-live="polite">
+      <span class="label" id="vd-label">Vandaag</span>
+      <strong id="vd-titel"></strong>
+      <p id="vd-tekst"></p>
+      <button type="button" class="small" id="vd-log" hidden>Training gelopen</button>
+    </section>
+
+    <section class="card" id="eind" hidden>
+      <h2>Je plan is klaar!</h2>
+      <p>Je hebt de laatste week van je plan gehad. Hoe ging het? Kies een nieuw doel om verder te gaan, bijvoorbeeld een grotere afstand.</p>
+      <div class="rij"><button type="button" id="eind-nieuw">Kies een nieuw doel</button></div>
+    </section>
+
+    <section class="card">
+      <span class="label">Jouw doel</span>
+      <p class="doel-tekst" id="pl-doel"></p>
+      <span class="pill neutraal" id="pl-pill"></span>
+      <p id="pl-uitleg"></p>
+      <div class="rij" id="pl-acties" hidden><button type="button" class="small" id="pl-herhaal">Herhaal deze week</button></div>
+      <p class="hint" id="pl-week"></p>
+      <div class="balk" aria-hidden="true"><span id="pl-balk"></span></div>
+      <div class="cijfers">
+        <div><span class="c-num" id="c-gedaan">0</span><span class="c-lbl">trainingen gelopen</span></div>
+        <div><span class="c-num" id="c-min">0</span><span class="c-lbl">minuten hardgelopen</span></div>
+        <div><span class="c-num" id="c-rpe">–</span><span class="c-lbl">gem. zwaarte, laatste 3</span></div>
+      </div>
+    </section>
+
+    <section class="card tip" id="tip">
+      <span class="label">Tip van de week</span>
+      <p id="tip-tekst"></p>
+    </section>
+
+    <section class="card">
+      <h2>Week voor week</h2>
+      <ol class="weken" id="weken"></ol>
+    </section>
+
+    <section class="card">
+      <h3>Mijlpalen</h3>
+      <ul class="mijlpalen" id="mijlpalen"></ul>
+    </section>
+
+    <section class="card veilig">
+      <h3>Zo loop je veilig</h3>
+      <ul class="over-lijst">
+        <li>Loop rustig: je moet nog in zinnen kunnen praten.</li>
+        <li>Begin met 5-10 minuten wandelen of rustig dribbelen als warming-up.</li>
+        <li>Houd een rustdag tussen je trainingen.</li>
+        <li>Voelt een week te zwaar? Herhaal die week gerust.</li>
+        <li>Pijn? Stop, neem rust en ga bij aanhoudende klachten naar een fysiotherapeut of sportarts.</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- LOGBOEK -->
+  <main class="wrap" id="view-log" role="tabpanel" aria-labelledby="tab-log" hidden>
+    <section class="card">
+      <h2>Training invullen</h2>
+      <form id="log-form" novalidate class="wrap" style="gap:14px">
+        <div class="gekoppeld" id="log-gekoppeld" hidden><span id="log-training"></span><button type="button" class="ghost small" id="log-los">Los</button></div>
+        <div class="twee">
+          <div class="field"><label for="log-datum">Datum</label><input type="date" id="log-datum" required></div>
+          <div class="field"><label for="log-min">Hoe lang?</label><span class="veld"><input type="number" id="log-min" min="1" max="400" step="1" inputmode="numeric" placeholder="0"><em>min</em></span></div>
+        </div>
+        <div class="field"><label for="log-km">Afstand <small class="hint">(mag leeg)</small></label><span class="veld"><input type="number" id="log-km" min="0" max="100" step="0.1" inputmode="decimal" placeholder="0"><em>km</em></span></div>
+        <div class="field">
+          <div class="rpe-kop"><label for="log-rpe">Hoe zwaar voelde het?</label><span class="rpe-waarde"><strong id="rpe-getal">12</strong> <span id="rpe-tekst">licht</span></span></div>
+          <input type="range" id="log-rpe" min="6" max="20" step="1" value="12" aria-describedby="rpe-tekst">
+          <div class="ends"><span>6 = heel licht</span><span>20 = maximaal</span></div>
+        </div>
+        <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="flabel" style="font-weight:600;padding:0;margin-bottom:6px">Kon je tijdens het lopen nog praten?</legend>
+          <div class="janee"><label class="keuze"><input type="radio" name="praten" value="ja"><span>Ja</span></label><label class="keuze"><input type="radio" name="praten" value="nee"><span>Nee</span></label></div></fieldset>
+        <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="flabel" style="font-weight:600;padding:0;margin-bottom:6px">Had je ergens pijn?</legend>
+          <div class="janee"><label class="keuze"><input type="radio" name="pijn" value="nee"><span>Nee</span></label><label class="keuze"><input type="radio" name="pijn" value="ja"><span>Ja</span></label></div></fieldset>
+        <div class="field" id="pijn-veld" hidden><label for="log-pijn-waar">Waar, en hoe erg?</label><input type="text" id="log-pijn-waar" placeholder="bijv. linkerknie, licht, na 10 minuten"></div>
+        <div class="field"><label for="log-notitie">Notitie <small class="hint">(mag leeg)</small></label><textarea id="log-notitie" rows="2" placeholder="bijv. warm weer, lekker gelopen"></textarea></div>
+        <p class="fout" id="log-fout" hidden></p>
+        <div class="rij"><button type="submit">Training opslaan</button></div>
+      </form>
+    </section>
+    <section class="card reactie" id="reactie" hidden aria-live="polite">
+      <span class="label">Reactie</span>
+      <p id="reactie-tekst"></p>
+      <p id="reactie-mijlpaal" hidden style="font-weight:600;color:var(--good)"></p>
+      <div class="rij"><button type="button" class="small" id="reactie-herhaal" hidden>Herhaal deze week</button><button type="button" class="ghost small" id="reactie-plan">Naar mijn plan</button></div>
+    </section>
+    <section class="card">
+      <h2>Mijn trainingen</h2>
+      <ul class="sessies" id="sessies"></ul>
+      <div class="rij geen-print"><button type="button" class="ghost small" id="csv">Download als CSV</button></div>
+    </section>
+  </main>
+
+  <!-- OVER -->
+  <main class="wrap" id="view-over" role="tabpanel" aria-labelledby="tab-over" hidden>
+    <section class="card" id="installeer">
+      <h2>Zet TargetCoach op je telefoon</h2>
+      <p id="inst-tekst">Open deze pagina op je telefoon. iPhone: tik in Safari op het deelicoon en kies "Zet op beginscherm". Android: tik in Chrome op de drie puntjes en kies "App installeren" of "Toevoegen aan startscherm".</p>
+      <div class="rij"><button type="button" id="inst-knop" hidden>Installeer de app</button></div>
+    </section>
+    <section class="card">
+      <h2>Over TargetCoach Basis</h2>
+      <p>TargetCoach Basis maakt een hardloopplan met vaste regels uit betrouwbare bronnen. Er zit geen AI in: daardoor is de app gratis en werkt hij zonder account. Wil je een coach die met je meedenkt en je plan persoonlijk bijstuurt, gebruik dan TargetCoach met AI-coach (daarvoor heb je een Claude-account nodig).</p>
+      <h3>Waar het plan op gebaseerd is</h3>
+      <ul class="over-lijst">
+        <li>Rustig opbouwen, vooral in de eerste weken, en na elke 2 weken een rustigere week (Buist e.a., 2008; Nielsen e.a., 2014; Damsted e.a., 2019).</li>
+        <li>Vooral rustig trainen; gevorderden hooguit één zwaardere training per week (Seiler, 2010; Muñoz e.a., 2014).</li>
+        <li>Een wekelijkse lange duurloop vanaf 10 km, en minder trainen in de laatste weken voor een (halve) marathon (Bosquet e.a., 2007; Smyth & Lawlor, 2021).</li>
+        <li>Voor een marathon toewerken naar ongeveer 30 km per week; wandelpauzes mogen (Rasmussen e.a., 2013; Hottenrott e.a., 2016).</li>
+        <li>De gezondheidsvragen zijn gebaseerd op de PAR-Q+ (2023). De schema's zijn eigen schema's volgens deze principes.</li>
+      </ul>
+      <h3>Privacy</h3>
+      <p>Je antwoorden, je plan en je logboek worden alleen op dit apparaat bewaard. Er wordt niets naar een server gestuurd. De lettertypes worden geladen via Google Fonts. Wis je je browsergegevens, dan ben je je gegevens kwijt.</p>
+      <div class="rij"><button type="button" class="ghost small" id="nieuw-plan">Nieuw plan maken</button><button type="button" class="ghost small gevaar" id="wis-alles">Alles wissen</button><span class="status" id="wis-status" aria-live="polite"></span></div>
+    </section>
+  </main>
+
+  <footer class="voet">
+    <span>TargetCoach is geen arts of fysiotherapeut. Twijfel je over je gezondheid, overleg dan met je huisarts.</span>
+  </footer>
+</div>
+
+<script src="planregels.js"></script>
+<script>
+(() => {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+  const KEY = "targetcoach-basis";
+  const DAG = 86400000;
+  const DAGNAMEN = TCPlan.DAGNAMEN;
+  const DAGKORT = ["zo", "ma", "di", "wo", "do", "vr", "za"];
+  const p2 = (n) => String(n).padStart(2, "0");
+  const isoVan = (d) => d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate());
+  const vandaag = () => isoVan(new Date());
+  const dagNr = (iso) => Math.floor(Date.parse(iso + "T12:00:00") / DAG);
+  const fmt = (iso, opt) => new Date(iso + "T12:00:00").toLocaleDateString("nl-NL", opt || { day: "numeric", month: "long" });
+  const weekVan = (iso, start) => Math.floor((dagNr(iso) - dagNr(start)) / 7) + 1;
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+  // ---------- Opslag (alleen op dit apparaat) ----------
+  let S = leeg();
+  function leeg() { return { v: 1, plan: null, log: [], antw: null, gezien: [] }; }
+  function laden() {
+    try {
+      const d = JSON.parse(localStorage.getItem(KEY));
+      if (d && typeof d === "object") return Object.assign(leeg(), d, { log: Array.isArray(d.log) ? d.log : [], gezien: Array.isArray(d.gezien) ? d.gezien : [] });
+    } catch (_) {}
+    return leeg();
+  }
+  function bewaar() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (_) {} }
+
+  // ---------- Navigatie ----------
+  const VIEWS = ["welkom", "vragen", "resultaat", "plan", "log", "over"];
+  function toon(naam) {
+    VIEWS.forEach((v) => { $("#view-" + v).hidden = v !== naam; });
+    const metTabs = ["plan", "log", "over"].includes(naam);
+    $("#tabs").hidden = !metTabs;
+    $("#band-in").classList.toggle("zonder-tabs", !metTabs);
+    ["plan", "log", "over"].forEach((t) => $("#tab-" + t).setAttribute("aria-selected", String(t === naam)));
+    if (naam === "plan") renderPlan();
+    if (naam === "log") renderLog();
+    window.scrollTo(0, 0);
+  }
+  ["plan", "log", "over"].forEach((t) => $("#tab-" + t).addEventListener("click", () => toon(t)));
+  $("#tabs").addEventListener("keydown", (e) => {
+    if (!["ArrowLeft", "ArrowRight"].includes(e.key)) return;
+    const t = ["plan", "log", "over"], i = t.findIndex((x) => $("#tab-" + x).getAttribute("aria-selected") === "true");
+    const n = t[(i + (e.key === "ArrowRight" ? 1 : t.length - 1)) % t.length]; toon(n); $("#tab-" + n).focus();
+  });
+
+  // ---------- Vragenlijst ----------
+  const PARQ = [
+    "Heeft een arts ooit gezegd dat je een hartaandoening of hoge bloeddruk hebt?",
+    "Heb je pijn op de borst in rust, bij dagelijkse bezigheden of bij inspanning?",
+    "Ben je het afgelopen jaar weleens duizelig geworden waardoor je je evenwicht verloor, of flauwgevallen?",
+    "Heb je een andere chronische aandoening (bijvoorbeeld diabetes of een longziekte)?",
+    "Gebruik je medicijnen voor een chronische aandoening?",
+    "Heb je nu (of had je het afgelopen jaar) een probleem met botten, gewrichten of spieren dat erger kan worden door meer te bewegen?",
+    "Heeft een arts gezegd dat je alleen onder medisch toezicht mag sporten?",
+  ];
+  let A = null, stap = 0;
+  function nieuweAntwoorden() { return { parq: PARQ.map(() => ""), arts: false, doel: "", niveau: -1, ervaren: null, halveGedaan: null, dagen: [], start: volgendeMaandag(), eindKeuze: "nee", eind: "" }; }
+  function volgendeMaandag() { const d = new Date(); const dag = d.getDay(); d.setDate(d.getDate() + (dag === 1 ? 0 : (8 - dag) % 7)); return isoVan(d); }
+  const STAPPEN = [
+    { id: "gezond", titel: "Eerst even je gezondheid", uitleg: "Zeven korte vragen, gebaseerd op de PAR-Q+. Zo weet je of je veilig kunt beginnen." },
+    { id: "doel", titel: "Wat is je doel?", uitleg: "Kies wat je wilt bereiken. Twijfel je? Begin klein: je kunt daarna altijd een groter doel kiezen." },
+    { id: "niveau", titel: "Hoe lang kun je nu rustig aan één stuk hardlopen?", uitleg: "Rustig betekent: je kunt nog in zinnen praten. Kies eerlijk; zo wordt het plan niet te zwaar." },
+    { id: "ervaring", titel: "Nog iets over je ervaring", uitleg: "", alleen: () => A.niveau >= 3 || A.doel === "half" || A.doel === "mar" },
+    { id: "dagen", titel: "Op welke dagen wil je trainen?", uitleg: "Kies 2 tot 4 dagen, het liefst met een rustdag ertussen. Voor beginners is 3 keer per week genoeg." },
+    { id: "wanneer", titel: "Wanneer begin je?", uitleg: "Heb je een wedstrijd of een datum in gedachten? Dan laat het plan daar op uitkomen." },
+  ];
+  const actief = () => STAPPEN.filter((s) => !s.alleen || s.alleen());
+
+  function keuze(name, value, titel, sub, checked, type) {
+    const l = document.createElement("label"); l.className = "keuze";
+    const i = document.createElement("input"); i.type = type || "radio"; i.name = name; i.value = value; i.checked = !!checked;
+    const s = document.createElement("span"); s.textContent = titel;
+    if (sub) { const sm = document.createElement("small"); sm.textContent = sub; s.appendChild(sm); }
+    l.append(i, s); return l;
+  }
+  function janee(name, waarde, aria) {
+    const d = document.createElement("div"); d.className = "janee"; d.setAttribute("role", "radiogroup"); if (aria) d.setAttribute("aria-label", aria);
+    d.append(keuze(name, "nee", "Nee", "", waarde === "nee"), keuze(name, "ja", "Ja", "", waarde === "ja"));
+    return d;
+  }
+
+  function renderVraag() {
+    const lijst = actief(); stap = Math.min(stap, lijst.length - 1);
+    const s = lijst[stap];
+    $("#vraag-nr").textContent = "Vraag " + (stap + 1) + " van " + lijst.length;
+    $("#stippen").innerHTML = lijst.map((_, i) => '<span class="' + (i <= stap ? "ja" : "") + '"></span>').join("");
+    $("#vraag-titel").textContent = s.titel;
+    $("#vraag-uitleg").textContent = s.uitleg; $("#vraag-uitleg").hidden = !s.uitleg;
+    $("#vraag-fout").hidden = true;
+    $("#vraag-terug").textContent = stap === 0 ? "Annuleren" : "Terug";
+    $("#vraag-verder").textContent = stap === lijst.length - 1 ? "Maak mijn plan" : "Verder";
+    const box = $("#vraag-inhoud"); box.innerHTML = "";
+    if (s.id === "gezond") {
+      const ol = document.createElement("ol"); ol.className = "parq";
+      PARQ.forEach((q, i) => {
+        const li = document.createElement("li");
+        const p = document.createElement("span"); p.textContent = q; p.id = "parq-q" + i;
+        const jn = janee("parq" + i, A.parq[i]); jn.setAttribute("aria-labelledby", p.id);
+        jn.addEventListener("change", (e) => { A.parq[i] = e.target.value; toonArts(); });
+        li.append(p, jn); ol.appendChild(li);
+      });
+      const m = document.createElement("div"); m.className = "melding let"; m.id = "arts-melding"; m.hidden = true;
+      m.innerHTML = "<strong>Overleg eerst met je huisarts.</strong> Je beantwoordde een vraag met ja. Bespreek met je huisarts of hardlopen voor jou veilig is, en hoe je het beste kunt beginnen.";
+      const lab = document.createElement("label"); lab.className = "rij"; lab.style.marginTop = "10px"; lab.style.fontWeight = "600";
+      const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "arts-ok"; cb.checked = A.arts; cb.style.width = "22px"; cb.style.height = "22px";
+      cb.addEventListener("change", () => { A.arts = cb.checked; });
+      lab.append(cb, document.createTextNode("Ik heb overlegd met mijn huisarts en ik mag beginnen."));
+      m.appendChild(lab);
+      box.append(ol, m); toonArts();
+    } else if (s.id === "doel") {
+      const k = document.createElement("div"); k.className = "keuzes";
+      Object.entries(TCPlan.DOELEN).forEach(([id, d]) => k.appendChild(keuze("doel", id, d.t, d.u, A.doel === id)));
+      k.addEventListener("change", (e) => { A.doel = e.target.value; });
+      box.appendChild(k);
+    } else if (s.id === "niveau") {
+      const k = document.createElement("div"); k.className = "keuzes";
+      TCPlan.NIVEAUS.forEach((n) => k.appendChild(keuze("niveau", n.id, n.t, "", A.niveau === n.id)));
+      k.addEventListener("change", (e) => { A.niveau = Number(e.target.value); });
+      box.appendChild(k);
+    } else if (s.id === "ervaring") {
+      const vragen = [];
+      if (A.niveau >= 3) vragen.push(["ervaren", "Loop je al minstens 3 maanden regelmatig (2 keer per week of vaker)?"]);
+      if (A.doel === "half" || A.doel === "mar") vragen.push(["halveGedaan", "Heb je eerder een halve marathon (of langer) gelopen?"]);
+      const ol = document.createElement("ol"); ol.className = "parq";
+      vragen.forEach(([sl, q], i) => {
+        const li = document.createElement("li");
+        const p = document.createElement("span"); p.textContent = q; p.id = "erv-q" + i;
+        const jn = janee(sl, A[sl] === true ? "ja" : A[sl] === false ? "nee" : ""); jn.setAttribute("aria-labelledby", p.id);
+        jn.addEventListener("change", (e) => { A[sl] = e.target.value === "ja"; });
+        li.append(p, jn); ol.appendChild(li);
+      });
+      box.appendChild(ol);
+    } else if (s.id === "dagen") {
+      const k = document.createElement("div"); k.className = "dagen";
+      [1, 2, 3, 4, 5, 6, 0].forEach((d) => { const l = keuze("dag", d, DAGKORT[d], "", A.dagen.includes(d), "checkbox"); l.querySelector("input").setAttribute("aria-label", DAGNAMEN[d]); k.appendChild(l); });
+      k.addEventListener("change", () => { A.dagen = Array.from(k.querySelectorAll("input:checked")).map((i) => Number(i.value)); toonDagHint(); });
+      const h = document.createElement("p"); h.className = "hint"; h.id = "dag-hint";
+      box.append(k, h); toonDagHint();
+    } else if (s.id === "wanneer") {
+      const f1 = document.createElement("div"); f1.className = "field";
+      f1.innerHTML = '<label for="v-start">Startdatum</label>';
+      const st = document.createElement("input"); st.type = "date"; st.id = "v-start"; st.value = A.start; st.min = vandaag();
+      st.addEventListener("change", () => { A.start = st.value; });
+      f1.appendChild(st);
+      const k = document.createElement("div"); k.className = "keuzes"; k.style.marginTop = "12px";
+      k.append(keuze("eindk", "nee", "Geen vaste datum", "Het plan duurt zo lang als nodig is om veilig op te bouwen.", A.eindKeuze === "nee"),
+        keuze("eindk", "ja", "Ik heb een wedstrijd of doeldatum", "", A.eindKeuze === "ja"));
+      const f2 = document.createElement("div"); f2.className = "field"; f2.style.marginTop = "8px"; f2.hidden = A.eindKeuze !== "ja";
+      f2.innerHTML = '<label for="v-eind">Doeldatum</label>';
+      const en = document.createElement("input"); en.type = "date"; en.id = "v-eind"; en.value = A.eind; en.min = vandaag();
+      en.addEventListener("change", () => { A.eind = en.value; });
+      f2.appendChild(en);
+      k.addEventListener("change", (e) => { A.eindKeuze = e.target.value; f2.hidden = A.eindKeuze !== "ja"; });
+      box.append(f1, k, f2);
+    }
+    const eerste = box.querySelector("input"); if (eerste && stap > 0) eerste.focus({ preventScroll: true });
+  }
+  function toonArts() { const m = $("#arts-melding"); if (m) m.hidden = !A.parq.includes("ja"); }
+  function toonDagHint() {
+    const h = $("#dag-hint"); if (!h) return;
+    const d = A.dagen.slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
+    const naast = d.some((x, i) => i > 0 && ((x + 6) % 7) - ((d[i - 1] + 6) % 7) === 1) || (d.includes(0) && d.includes(1));
+    h.textContent = !d.length ? "" : d.length + (d.length === 1 ? " dag" : " dagen") + " gekozen." + (naast ? " Tip: twee dagen achter elkaar is zwaar voor beginners; houd liever een rustdag ertussen." : "");
+  }
+  function controleer(s) {
+    if (s.id === "gezond") {
+      if (A.parq.some((x) => !x)) return "Beantwoord alle vragen met ja of nee.";
+      if (A.parq.includes("ja") && !A.arts) return "Overleg eerst met je huisarts. Heb je dat gedaan en mag je beginnen? Vink dat dan aan.";
+    }
+    if (s.id === "doel" && !A.doel) return "Kies een doel.";
+    if (s.id === "niveau" && A.niveau < 0) return "Kies hoe lang je nu kunt hardlopen.";
+    if (s.id === "ervaring") {
+      if (A.niveau >= 3 && A.ervaren === null) return "Beantwoord alle vragen.";
+      if ((A.doel === "half" || A.doel === "mar") && A.halveGedaan === null) return "Beantwoord alle vragen.";
+    }
+    if (s.id === "dagen" && (A.dagen.length < 2 || A.dagen.length > 4)) return "Kies 2, 3 of 4 dagen.";
+    if (s.id === "wanneer") {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(A.start)) return "Kies een startdatum.";
+      if (A.eindKeuze === "ja") {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(A.eind)) return "Kies je doeldatum.";
+        if (dagNr(A.eind) <= dagNr(A.start)) return "De doeldatum moet na de startdatum liggen.";
+      }
+    }
+    return "";
+  }
+  $("#vraag-verder").addEventListener("click", () => {
+    const lijst = actief(), fout = controleer(lijst[stap]);
+    if (fout) { $("#vraag-fout").textContent = fout; $("#vraag-fout").hidden = false; return; }
+    if (stap < actief().length - 1) { stap++; renderVraag(); window.scrollTo(0, 0); return; }
+    maakResultaat();
+  });
+  $("#vraag-terug").addEventListener("click", () => {
+    if (stap === 0) { toon(S.plan ? "plan" : "welkom"); return; }
+    stap--; renderVraag();
+  });
+  $("#vraag-inhoud").addEventListener("change", () => { $("#vraag-fout").hidden = true; });
+
+  // ---------- Resultaat ----------
+  let voorstel = null;
+  function invoer() {
+    return { doel: A.doel, niveau: A.niveau, ervaren: !!A.ervaren, halveGedaan: !!A.halveGedaan, dagen: A.dagen, start: A.start, eind: A.eindKeuze === "ja" ? A.eind : "" };
+  }
+  function maakResultaat() {
+    voorstel = TCPlan.maakPlan(invoer());
+    toon("resultaat");
+    const blok = !!voorstel.blok;
+    $("#res-blok").hidden = !blok;
+    $("#res-start").hidden = blok; $("#res-terug").hidden = blok;
+    $("#res-doel").textContent = blok ? TCPlan.DOELEN[A.doel].kort : voorstel.doel;
+    const box = $("#res-meldingen"); box.innerHTML = "";
+    if (blok) {
+      $("#res-samenvatting").textContent = "";
+      $("#res-blok-tekst").textContent = voorstel.blok.tekst;
+      $("#res-ander").textContent = "Kies " + TCPlan.DOELEN[voorstel.blok.ander].t.toLowerCase();
+      $("#res-weken").innerHTML = "";
+      return;
+    }
+    const N = voorstel.weken.length, per = voorstel.weken[0] ? voorstel.weken[0].length : 0;
+    $("#res-samenvatting").textContent = N + " weken, " + per + " keer per week. Je begint op " + fmt(voorstel.start, { weekday: "long", day: "numeric", month: "long" }) + ".";
+    voorstel.waarschuwingen.forEach((t) => { const m = document.createElement("div"); m.className = "melding let"; m.textContent = t; box.appendChild(m); });
+    voorstel.notities.forEach((t) => { const m = document.createElement("div"); m.className = "melding"; m.textContent = t; box.appendChild(m); });
+    tekenWeken($("#res-weken"), voorstel.weken, null);
+  }
+  $("#res-start").addEventListener("click", () => {
+    S.plan = { doel: voorstel.doel, weken: voorstel.weken, start: voorstel.start, dagen: A.dagen.slice(), bron: "vragenlijst", gemaakt: vandaag(), doelCode: A.doel };
+    S.antw = A; S.gezien = [];
+    bewaar(); toon("plan");
+  });
+  $("#res-terug").addEventListener("click", () => { stap = actief().length - 1; toon("vragen"); renderVraag(); });
+  $("#res-blok-terug").addEventListener("click", () => { stap = 1; toon("vragen"); renderVraag(); });
+  $("#res-ander").addEventListener("click", () => { A.doel = voorstel.blok.ander; A.halveGedaan = A.halveGedaan === null ? false : A.halveGedaan; maakResultaat(); });
+
+  function startVragen() { A = S.antw ? Object.assign(nieuweAntwoorden(), S.antw, { start: volgendeMaandag(), eind: "", eindKeuze: "nee" }) : nieuweAntwoorden(); stap = 0; toon("vragen"); renderVraag(); }
+  $("#begin").addEventListener("click", startVragen);
+
+  // ---------- Plan tonen ----------
+  const tid = (w, j) => w + "-" + j;
+  function gedaanMap() { const m = {}; S.log.forEach((e) => { if (e.training) m[e.training] = e; }); return m; }
+  function huidigeWeek() { return S.plan ? weekVan(vandaag(), S.plan.start) : 0; }
+
+  function tekenWeken(ol, weken, plan) {
+    ol.innerHTML = "";
+    const gedaan = plan ? gedaanMap() : {}, nuW = plan ? huidigeWeek() : 0, N = weken.length;
+    weken.forEach((wk, i) => {
+      const w = i + 1;
+      const li = document.createElement("li");
+      const det = document.createElement("details"); det.className = "week";
+      const sum = document.createElement("summary");
+      const nr = document.createElement("span"); nr.className = "nr"; nr.textContent = "Week " + w;
+      sum.appendChild(nr);
+      if (plan && w === nuW) { const b = document.createElement("span"); b.className = "badge"; b.textContent = "Deze week"; sum.appendChild(b); det.classList.add("nu"); }
+      const n = wk.filter((_, j) => gedaan[tid(w, j)]).length;
+      const tel = document.createElement("span"); tel.className = "tel";
+      tel.textContent = plan ? (wk.length ? n + " van " + wk.length + (n === wk.length ? " ✓" : "") : "rust") : wk.length + " trainingen";
+      if (plan && wk.length && n === wk.length) det.classList.add("klaar");
+      const pijl = document.createElement("span"); pijl.className = "pijl"; pijl.setAttribute("aria-hidden", "true");
+      sum.append(tel, pijl);
+      const ul = document.createElement("ul"); ul.className = "trainingen";
+      if (!wk.length) { const p = document.createElement("li"); p.className = "hint"; p.textContent = "Rustweek."; ul.appendChild(p); }
+      wk.forEach((t, j) => {
+        const id = tid(w, j), e = gedaan[id];
+        const l = document.createElement("li"); l.className = "training" + (e ? " gedaan" : "");
+        const tt = document.createElement("span"); tt.className = "tt";
+        if (t.kop) { const tk = document.createElement("span"); tk.className = "tk"; tk.textContent = t.kop; tt.appendChild(tk); }
+        const tx = document.createElement("span"); tx.className = "tx"; tx.textContent = t.tekst; tt.appendChild(tx);
+        l.appendChild(tt);
+        if (plan) {
+          if (e) { const v = document.createElement("span"); v.className = "vink"; v.setAttribute("aria-label", "Gelopen op " + fmt(e.datum)); v.textContent = "✓"; l.appendChild(v); }
+          else { const b = document.createElement("button"); b.type = "button"; b.className = "ghost small"; b.textContent = "Gelopen"; b.addEventListener("click", () => logVoor(w, j)); l.appendChild(b); }
+        }
+        ul.appendChild(l);
+      });
+      det.append(sum, ul); li.appendChild(det); ol.appendChild(li);
+      if ((plan && w === Math.min(N, Math.max(1, nuW))) || (!plan && w === 1)) det.open = true;
+    });
+  }
+
+  function status() {
+    const s = S.log.slice().sort((a, b) => (a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : (a.ts || 0) - (b.ts || 0)));
+    const vd = dagNr(vandaag());
+    const binnen = (n) => s.filter((e) => vd - dagNr(e.datum) < n && vd >= dagNr(e.datum));
+    const l7 = binnen(7), l14 = binnen(14), drie = s.slice(-3);
+    const gem = drie.length ? drie.reduce((t, e) => t + Number(e.rpe || 0), 0) / drie.length : null;
+    const pijn7 = l7.filter((e) => e.pijn).length, pijn14 = l14.filter((e) => e.pijn).length;
+    const sinds = s.length ? vd - dagNr(s[s.length - 1].datum) : null;
+    let st;
+    if (!s.length) st = { k: "neutraal", i: "•", t: "Nog geen trainingen", u: "Tik na je training op \"Gelopen\" en vul kort in hoe het ging." };
+    else if (pijn14 >= 2) st = { k: "kritiek", i: "!", t: "Pijn komt terug", u: "Je gaf vaker pijn aan. Stop even met hardlopen en laat je klachten bekijken door een fysiotherapeut of sportarts.", herhaal: true };
+    else if (pijn7 >= 1) st = { k: "let", i: "!", t: "Let op: pijn gemeld", u: "Train niet door pijn heen. Neem rust of herhaal deze week. Gaat het niet binnen een paar dagen over, ga dan naar een fysiotherapeut of sportarts.", herhaal: true };
+    else if (gem !== null && gem >= 15 && drie.length >= 2) st = { k: "let", i: "!", t: "Trainingen voelen zwaar", u: "Je laatste trainingen voelden zwaar. Loop rustiger (je moet nog in zinnen kunnen praten) of herhaal deze week voordat je verdergaat.", herhaal: true };
+    else if (gem !== null && gem <= 10 && drie.length >= 3 && drie.every((e) => e.praten && !e.pijn)) st = { k: "neutraal", i: "↑", t: "Gaat erg makkelijk", u: "Fijn! Houd je toch aan het plan: te snel opbouwen vergroot de kans op blessures. Na dit plan kun je een groter doel kiezen." };
+    else if (sinds !== null && sinds > 6) st = { k: "let", i: "…", t: "Even niet getraind", u: "Je hebt " + sinds + " dagen niet getraind. Pak het rustig op en herhaal eventueel de vorige week.", herhaal: true };
+    else if (l7.length >= 2) st = { k: "goed", i: "✓", t: "Goed op schema", u: "Je traint regelmatig. Blijf rustdagen tussen je trainingen houden." };
+    else st = { k: "neutraal", i: "•", t: "Lekker bezig", u: "Probeer je trainingsdagen aan te houden, met een rustdag ertussen." };
+    return { st, gem, minuten: s.reduce((t, e) => t + Number(e.min || 0), 0) };
+  }
+
+  const TIPS = [
+    "Regelmaat is belangrijker dan snelheid. Een paar keer per week rustig lopen brengt je verder dan af en toe een zware training.",
+    "Kun je tijdens het lopen nog in zinnen praten? Dan zit je goed. Lukt dat niet, loop dan rustiger of wandel even.",
+    "Rustdagen horen bij je training: je lichaam wordt sterker tijdens het herstel.",
+    "Begin elke training met 5-10 minuten wandelen of rustig dribbelen. Zo raakt je lichaam rustig gewend aan de inspanning.",
+    "Voelt een week te zwaar? Herhaal die week gerust. Dat is geen achteruitgang, maar slim trainen.",
+    "Pijn op één plek die erger wordt tijdens het lopen? Stop, neem rust en laat het bekijken als het niet overgaat.",
+    "Bouw rustig op, vooral in de eerste weken: dan is de kans op blessures het grootst.",
+    "Ook als het makkelijk voelt: houd je aan het plan. Je spieren en pezen hebben meer tijd nodig dan je conditie.",
+    "Kies vaste dagen en tijden voor je trainingen. Dan wordt hardlopen vanzelf een gewoonte.",
+    "Wandelpauzes zijn prima, ook bij langere afstanden. Ze helpen je om het vol te houden.",
+    "Vul na elke training kort in hoe het ging. Zo zie je je voortgang en merk je op tijd als het te zwaar wordt.",
+    "Na je plan een nieuw doel kiezen? Neem een stap die past: bijvoorbeeld van 5 km naar 10 km.",
+  ];
+  function tipVanDeWeek() { const w = Math.floor((dagNr(vandaag()) + 3) / 7); return TIPS[w % TIPS.length]; }
+
+  function mijlpalen() {
+    const s = S.log, N = S.plan ? S.plan.weken.length : 0, nuW = huidigeWeek(), g = gedaanMap();
+    const volleWeek = S.plan ? S.plan.weken.some((wk, i) => wk.length && wk.every((_, j) => g[tid(i + 1, j)])) : false;
+    const laatste = S.plan ? S.plan.weken[N - 1] : [];
+    const finish = S.plan ? laatste.length && g[tid(N, laatste.length - 1)] : false;
+    return [
+      { id: "eerste", t: "Eerste training", ok: s.length >= 1 },
+      { id: "week", t: "Een volle week", ok: volleWeek },
+      { id: "vijf", t: "5 trainingen", ok: s.length >= 5 },
+      { id: "dertig", t: "30 min aan één stuk", ok: s.some((e) => e.trainingTekst && !/×/.test(e.trainingTekst) && Number(e.min) >= 30) },
+      { id: "half", t: "Halverwege", ok: s.length > 0 && nuW > N / 2 },
+      { id: "finish", t: "Finish", ok: !!finish },
+    ];
+  }
+
+  function renderPlan() {
+    if (!S.plan) { toon("welkom"); return; }
+    const P = S.plan, N = P.weken.length, nuW = huidigeWeek(), g = gedaanMap(), r = status();
+    $("#pl-doel").textContent = P.doel;
+    const pill = $("#pl-pill"); pill.className = "pill " + r.st.k; pill.textContent = r.st.i + " " + r.st.t;
+    $("#pl-uitleg").textContent = r.st.u;
+    $("#pl-acties").hidden = !magHerhalen(r);
+    $("#pl-week").textContent = nuW < 1 ? "Je plan begint op " + fmt(P.start, { weekday: "long", day: "numeric", month: "long" }) + "." : nuW > N ? "Plan afgerond." : "Week " + nuW + " van " + N;
+    const totaal = P.weken.reduce((t, w) => t + w.length, 0), klaar = Object.keys(g).length;
+    $("#pl-balk").style.width = (totaal ? Math.min(100, Math.round((klaar / totaal) * 100)) : 0) + "%";
+    $("#c-gedaan").textContent = S.log.length;
+    $("#c-min").textContent = r.minuten;
+    $("#c-rpe").textContent = r.gem === null ? "–" : r.gem.toFixed(1).replace(".", ",");
+    $("#tip-tekst").textContent = tipVanDeWeek();
+    $("#eind").hidden = !(nuW > N);
+    tekenWeken($("#weken"), P.weken, P);
+    const ul = $("#mijlpalen"); ul.innerHTML = "";
+    mijlpalen().forEach((m) => { const li = document.createElement("li"); li.className = m.ok ? "ja" : ""; li.innerHTML = '<span class="ic" aria-hidden="true">' + (m.ok ? "✓" : "") + "</span>"; li.appendChild(document.createTextNode(m.t)); li.setAttribute("aria-label", m.t + (m.ok ? ", behaald" : ", nog niet behaald")); ul.appendChild(li); });
+    renderVandaag(P, nuW, g);
+  }
+
+  function renderVandaag(P, nuW, g) {
+    const N = P.weken.length, vd = vandaag(), dag = new Date().getDay();
+    const knop = $("#vd-log"); knop.hidden = true;
+    $("#vd-label").textContent = "Vandaag · " + fmt(vd, { weekday: "long", day: "numeric", month: "long" });
+    if (nuW < 1) { $("#vd-titel").textContent = "Je plan begint " + (dagNr(P.start) - dagNr(vd) === 1 ? "morgen" : "op " + fmt(P.start, { weekday: "long", day: "numeric", month: "long" })); $("#vd-tekst").textContent = "Leg je schoenen alvast klaar!"; return; }
+    if (nuW > N) { $("#vd-titel").textContent = "Je plan is afgerond"; $("#vd-tekst").textContent = "Goed gedaan! Kies een nieuw doel om verder te gaan."; return; }
+    const wk = P.weken[nuW - 1];
+    const vandaagGelopen = S.log.some((e) => e.datum === vd);
+    const open = wk.map((t, j) => ({ t, j })).filter((x) => !g[tid(nuW, x.j)]);
+    if (vandaagGelopen) { $("#vd-titel").textContent = "Training gedaan ✓"; $("#vd-tekst").textContent = "Goed bezig! Gun je lichaam nu rust: herstel hoort bij je training."; return; }
+    if (!open.length) { $("#vd-titel").textContent = "Week " + nuW + " compleet ✓"; $("#vd-tekst").textContent = "Je hebt alle trainingen van deze week gedaan. Rust goed uit."; return; }
+    const dagen = P.dagen || [];
+    if (dagen.length && !dagen.includes(dag)) {
+      let volgende = ""; for (let i = 1; i <= 7; i++) { const d = (dag + i) % 7; if (dagen.includes(d)) { volgende = DAGNAMEN[d]; break; } }
+      $("#vd-titel").textContent = "Rustdag";
+      $("#vd-tekst").textContent = "Herstel hoort bij je training." + (volgende ? " Je volgende training is op " + volgende + ": " + open[0].t.tekst + "." : "");
+      knop.hidden = false; knop.textContent = "Toch vandaag gelopen"; knop.onclick = () => logVoor(nuW, open[0].j);
+      return;
+    }
+    $("#vd-titel").textContent = open[0].t.tekst;
+    $("#vd-tekst").textContent = "Begin met 5-10 minuten wandelen als warming-up en loop rustig: je moet nog kunnen praten.";
+    knop.hidden = false; knop.textContent = "Training gelopen"; knop.onclick = () => logVoor(nuW, open[0].j);
+  }
+
+  function magHerhalen(r) {
+    const P = S.plan, w = huidigeWeek();
+    return !!(P && r.st.herhaal && w >= 1 && w <= P.weken.length && !(P.herhaald && P.herhaald.week === w && P.herhaald.start === P.start));
+  }
+  function herhaalWeek() {
+    const P = S.plan, w = huidigeWeek();
+    if (!P || w < 1 || w > P.weken.length || !magHerhalen({ st: { herhaal: true } })) return;
+    const kopie = P.weken[w - 1].map((t) => Object.assign({}, t, { tekst: t.tekst.replace(/ \(herhaalweek[^)]*\)/, "") + " (herhaalweek)" }));
+    P.weken.splice(w, 0, kopie);
+    P.herhaald = { week: w, start: P.start };
+    // Trainingen in latere weken schuiven een week op.
+    S.log.forEach((e) => { if (!e.training) return; const [a, b] = e.training.split("-").map(Number); if (a > w) e.training = tid(a + 1, b); });
+    bewaar(); renderPlan();
+    $("#pl-uitleg").textContent = "Week " + w + " wordt herhaald: je plan is een week langer geworden. Volgende week doe je dezelfde trainingen nog een keer.";
+  }
+  $("#pl-herhaal").addEventListener("click", herhaalWeek);
+  $("#reactie-herhaal").addEventListener("click", () => { toon("plan"); herhaalWeek(); });
+  $("#eind-nieuw").addEventListener("click", startVragen);
+  $("#nieuw-plan").addEventListener("click", startVragen);
+
+  // ---------- Logboek ----------
+  let gekoppeld = null;
+  const RPE = (v) => v <= 8 ? "heel licht" : v <= 10 ? "erg licht" : v <= 12 ? "licht" : v <= 14 ? "redelijk zwaar" : v <= 16 ? "zwaar" : v <= 18 ? "erg zwaar" : "maximaal";
+  function toonRpe() { const v = Number($("#log-rpe").value); $("#rpe-getal").textContent = v; $("#rpe-tekst").textContent = RPE(v); }
+  $("#log-rpe").addEventListener("input", toonRpe);
+  $("#log-form").addEventListener("change", (e) => { if (e.target.name === "pijn") $("#pijn-veld").hidden = e.target.value !== "ja"; $("#log-fout").hidden = true; });
+
+  function logVoor(w, j) {
+    const t = S.plan.weken[w - 1][j];
+    gekoppeld = { id: tid(w, j), tekst: t.tekst, kop: t.kop };
+    toon("log");
+    $("#log-min").value = t.min || "";
+    $("#log-gekoppeld").hidden = false;
+    $("#log-training").textContent = "Week " + w + " · " + t.tekst;
+    $("#log-min").focus();
+  }
+  $("#log-los").addEventListener("click", () => { gekoppeld = null; $("#log-gekoppeld").hidden = true; });
+
+  function resetForm() {
+    $("#log-form").reset(); $("#log-datum").value = vandaag(); $("#log-datum").max = vandaag(); $("#pijn-veld").hidden = true; toonRpe();
+    if (!gekoppeld) $("#log-gekoppeld").hidden = true;
+  }
+  function renderLog() {
+    if (!$("#log-datum").value) resetForm();
+    $("#log-datum").max = vandaag();
+    const ul = $("#sessies"); ul.innerHTML = "";
+    const s = S.log.slice().sort((a, b) => (a.datum < b.datum ? 1 : a.datum > b.datum ? -1 : (b.ts || 0) - (a.ts || 0)));
+    if (!s.length) { const li = document.createElement("li"); li.className = "hint"; li.textContent = "Nog geen trainingen. Na je eerste training zie je ze hier."; ul.appendChild(li); }
+    s.forEach((e) => {
+      const li = document.createElement("li");
+      const d = document.createElement("span"); d.className = "sd"; d.textContent = fmt(e.datum, { day: "numeric", month: "numeric" });
+      const i = document.createElement("span"); i.className = "si";
+      const a = document.createElement("strong"); a.textContent = e.min + " min" + (e.km ? " · " + String(e.km).replace(".", ",") + " km" : "") + " · zwaarte " + e.rpe + " (" + RPE(e.rpe) + ")";
+      i.appendChild(a);
+      if (e.trainingTekst) { const t = document.createElement("span"); t.className = "hint"; t.textContent = e.trainingTekst; i.appendChild(t); }
+      if (e.pijn) { const p = document.createElement("span"); p.className = "pijn"; p.textContent = "Pijn" + (e.pijnWaar ? ": " + e.pijnWaar : ""); i.appendChild(p); }
+      if (e.notitie) { const n = document.createElement("span"); n.textContent = e.notitie; i.appendChild(n); }
+      const x = document.createElement("button"); x.type = "button"; x.className = "ghost small"; x.textContent = "Verwijder"; x.setAttribute("aria-label", "Verwijder training van " + fmt(e.datum));
+      let zeker = false;
+      x.addEventListener("click", () => {
+        if (!zeker) { zeker = true; x.textContent = "Zeker?"; setTimeout(() => { zeker = false; x.textContent = "Verwijder"; }, 3500); return; }
+        S.log = S.log.filter((y) => y.id !== e.id); bewaar(); renderLog();
+      });
+      li.append(d, i, x); ul.appendChild(li);
+    });
+  }
+
+  function reactieTekst(e) {
+    if (e.pijn) return "Je gaf pijn aan" + (e.pijnWaar ? " (" + e.pijnWaar + ")" : "") + ". Train niet door pijn heen: neem rust of herhaal deze week. Gaat het niet binnen een paar dagen over, ga dan naar een fysiotherapeut of sportarts.";
+    if (e.rpe >= 17) return "Dit was (bijna) maximaal. Dat is te zwaar en vergroot de kans op blessures. Loop de volgende keer zo rustig dat je nog in zinnen kunt praten.";
+    if (!e.praten || e.rpe >= 15) return "Goed dat je hebt getraind! Het voelde zwaar. Loop de volgende keer rustiger: je moet nog kunnen praten. Blijft het zwaar, herhaal dan deze week.";
+    if (e.rpe <= 10) return "Lekker licht gelopen! Houd je toch aan het plan: je spieren en pezen hebben tijd nodig om mee te groeien.";
+    return "Goed gedaan! Dit is precies de goede zwaarte. Neem morgen rust en ga zo door.";
+  }
+
+  $("#log-form").addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const fout = (t) => { $("#log-fout").textContent = t; $("#log-fout").hidden = false; };
+    const datum = $("#log-datum").value, min = Math.round(Number($("#log-min").value));
+    const praten = document.querySelector('input[name="praten"]:checked'), pijn = document.querySelector('input[name="pijn"]:checked');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(datum)) return fout("Kies een datum.");
+    if (dagNr(datum) > dagNr(vandaag())) return fout("De datum kan niet in de toekomst liggen.");
+    if (!(min >= 1 && min <= 400)) return fout("Vul in hoeveel minuten je hebt gelopen.");
+    if (!praten || !pijn) return fout("Geef aan of je kon praten en of je pijn had.");
+    const km = Number($("#log-km").value) || 0;
+    const e = { id: uid(), ts: Date.now(), datum, min, km: km > 0 ? Math.round(km * 10) / 10 : 0, rpe: Number($("#log-rpe").value), praten: praten.value === "ja", pijn: pijn.value === "ja",
+      pijnWaar: pijn.value === "ja" ? $("#log-pijn-waar").value.trim().slice(0, 120) : "", notitie: $("#log-notitie").value.trim().slice(0, 300) };
+    if (gekoppeld && !gedaanMap()[gekoppeld.id]) { e.training = gekoppeld.id; e.trainingTekst = gekoppeld.tekst; }
+    const voor = new Set(mijlpalen().filter((m) => m.ok).map((m) => m.id));
+    S.log.push(e); bewaar();
+    const nieuw = mijlpalen().filter((m) => m.ok && !voor.has(m.id) && !S.gezien.includes(m.id));
+    nieuw.forEach((m) => S.gezien.push(m.id)); bewaar();
+    gekoppeld = null; resetForm(); renderLog();
+    const r = status();
+    $("#reactie").hidden = false;
+    $("#reactie-tekst").textContent = reactieTekst(e);
+    $("#reactie-mijlpaal").hidden = !nieuw.length;
+    $("#reactie-mijlpaal").textContent = nieuw.length ? "Mijlpaal behaald: " + nieuw.map((m) => m.t).join(", ") + "! ✓" : "";
+    $("#reactie-herhaal").hidden = !magHerhalen(r);
+    $("#reactie").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+  $("#reactie-plan").addEventListener("click", () => { $("#reactie").hidden = true; toon("plan"); });
+
+  $("#csv").addEventListener("click", () => {
+    const kol = ["datum", "minuten", "km", "zwaarte (RPE)", "kon praten", "pijn", "waar", "training", "notitie"];
+    const esc = (v) => { const s = String(v == null ? "" : v); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    const rijen = S.log.slice().sort((a, b) => (a.datum < b.datum ? -1 : 1)).map((e) => [e.datum, e.min, e.km || "", e.rpe, e.praten ? "ja" : "nee", e.pijn ? "ja" : "nee", e.pijnWaar, e.trainingTekst || "", e.notitie].map(esc).join(";"));
+    const blob = new Blob(["﻿" + [kol.join(";")].concat(rijen).join("\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "targetcoach-logboek-" + vandaag() + ".csv";
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  });
+
+  // ---------- Alles wissen ----------
+  let wisZeker = false;
+  $("#wis-alles").addEventListener("click", (ev) => {
+    const b = ev.currentTarget;
+    if (!wisZeker) { wisZeker = true; b.textContent = "Zeker weten? Klik nog een keer"; $("#wis-status").textContent = "Je plan en logboek worden gewist."; setTimeout(() => { wisZeker = false; b.textContent = "Alles wissen"; $("#wis-status").textContent = ""; }, 4000); return; }
+    S = leeg(); bewaar(); wisZeker = false; b.textContent = "Alles wissen"; $("#wis-status").textContent = "";
+    toon("welkom");
+  });
+
+  // ---------- Gedeeld plan uit TargetCoach (AI) ----------
+  function vanB64(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+  async function decodeer(code) {
+    const bytes = vanB64(code.slice(1)); let tekst;
+    if (code[0] === "z") { const s = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw")); tekst = await new Response(s).text(); }
+    else if (code[0] === "j") tekst = new TextDecoder().decode(bytes);
+    else throw new Error("onbekend");
+    const p = JSON.parse(tekst);
+    if (!p || !Array.isArray(p.w) || !p.w.length || p.w.length > 52) throw new Error("leeg");
+    return {
+      doel: String(p.d || "Mijn hardloopdoel").slice(0, 200),
+      dagen: Array.isArray(p.g) ? p.g.filter((d) => Number.isInteger(d) && d >= 0 && d <= 6) : [],
+      weken: p.w.map((wk) => (Array.isArray(wk) ? wk : []).filter(Array.isArray).map((t) => ({ kop: String(t[0] || "").slice(0, 60), tekst: String(t[1] || "").slice(0, 300) })).filter((t) => t.tekst)),
+    };
+  }
+  let ontvangen = null;
+  async function bekijkLink() {
+    const code = decodeURIComponent(location.hash.slice(1)).trim();
+    if (!/^[zj][A-Za-z0-9_-]{8,}$/.test(code)) return false;
+    try { ontvangen = await decodeer(code); } catch (_) { return false; }
+    const N = ontvangen.weken.length;
+    $("#gedeeld").hidden = false;
+    $("#gedeeld-doel").textContent = ontvangen.doel;
+    $("#gedeeld-info").textContent = N + " weken" + (ontvangen.dagen.length ? ", op " + ontvangen.dagen.map((d) => DAGNAMEN[d]).join(", ") : "") + "." + (S.plan ? " Let op: je huidige plan wordt vervangen (je logboek blijft bewaard)." : "");
+    toon("welkom");
+    return true;
+  }
+  $("#gedeeld-ja").addEventListener("click", () => {
+    if (!ontvangen) return;
+    S.plan = { doel: ontvangen.doel, weken: ontvangen.weken, start: vandaag(), dagen: ontvangen.dagen, bron: "gedeeld", gemaakt: vandaag() };
+    S.log.forEach((e) => { delete e.training; });
+    bewaar();
+    history.replaceState(null, "", location.pathname);
+    $("#gedeeld").hidden = true; ontvangen = null;
+    toon("plan");
+  });
+
+  // ---------- Installeren als app ----------
+  let installEvent = null;
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvent = e; $("#inst-knop").hidden = false; });
+  $("#inst-knop").addEventListener("click", async () => { if (!installEvent) return; installEvent.prompt(); try { await installEvent.userChoice; } catch (_) {} installEvent = null; $("#inst-knop").hidden = true; });
+  if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) $("#installeer").hidden = true;
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+
+  // ---------- Start ----------
+  S = laden();
+  window.addEventListener("hashchange", () => { bekijkLink(); });
+  (async () => {
+    if (await bekijkLink()) return;
+    toon(S.plan ? "plan" : "welkom");
+  })();
+})();
+</script>
+</body>
+</html>
